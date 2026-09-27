@@ -1,0 +1,129 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidSavedQuote(data, docId) {
+      return data.keys().hasAll([
+        'id',
+        'title',
+        'clientRef',
+        'createdAt',
+        'createdAtMs',
+        'paveId1',
+        'paveName1',
+        'qte1',
+        'prixTonne1',
+        'paveId2',
+        'paveName2',
+        'qte2',
+        'prixTonne2',
+        'm2Tonne',
+        'coef',
+        'prixCamionComplet24t',
+        'prixGroupageTonne',
+        'extraTransportLines'
+      ]) &&
+      data.keys().hasOnly([
+        'id',
+        'title',
+        'clientRef',
+        'createdAt',
+        'createdAtMs',
+        'paveId1',
+        'paveName1',
+        'qte1',
+        'prixTonne1',
+        'paveId2',
+        'paveName2',
+        'qte2',
+        'prixTonne2',
+        'm2Tonne',
+        'coef',
+        'prixCamionComplet24t',
+        'prixGroupageTonne',
+        'transportMode',
+        'nbCamionsManuel',
+        'nbGroupageBagsManuel',
+        'extraTransportLines'
+      ]) &&
+      data.id == docId &&
+      data.id is string && data.id.size() >= 1 && data.id.size() <= 128 &&
+      data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+      data.clientRef is string && data.clientRef.size() <= 200 &&
+      data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 40 &&
+      data.createdAtMs is number && data.createdAtMs >= 0 &&
+      data.paveId1 is string && data.paveId1.size() >= 1 && data.paveId1.size() <= 128 &&
+      data.paveName1 is string && data.paveName1.size() >= 1 && data.paveName1.size() <= 200 &&
+      data.qte1 is number && data.qte1 >= 0 && data.qte1 <= 100000 &&
+      data.prixTonne1 is number && data.prixTonne1 >= 0 && data.prixTonne1 <= 100000 &&
+      data.paveId2 is string && data.paveId2.size() >= 1 && data.paveId2.size() <= 128 &&
+      data.paveName2 is string && data.paveName2.size() >= 1 && data.paveName2.size() <= 200 &&
+      data.qte2 is number && data.qte2 >= 0 && data.qte2 <= 100000 &&
+      data.prixTonne2 is number && data.prixTonne2 >= 0 && data.prixTonne2 <= 100000 &&
+      data.m2Tonne is number && data.m2Tonne > 0 && data.m2Tonne <= 1000 &&
+      data.coef is number && data.coef >= 1 && data.coef <= 20 &&
+      data.prixCamionComplet24t is number && data.prixCamionComplet24t >= 0 && data.prixCamionComplet24t <= 100000 &&
+      data.prixGroupageTonne is number && data.prixGroupageTonne >= 0 && data.prixGroupageTonne <= 100000 &&
+      (!('transportMode' in data) || (data.transportMode is string && data.transportMode.size() <= 32)) &&
+      (!('nbCamionsManuel' in data) || (data.nbCamionsManuel is number && data.nbCamionsManuel >= 0 && data.nbCamionsManuel <= 500)) &&
+      (!('nbGroupageBagsManuel' in data) || (data.nbGroupageBagsManuel is number && data.nbGroupageBagsManuel >= 0 && data.nbGroupageBagsManuel <= 5000)) &&
+      data.extraTransportLines is list && data.extraTransportLines.size() <= 30;
+    }
+
+    function isValidTarifConfig(data) {
+      return data.keys().hasAll([
+        'updatedAt',
+        'prixCamionComplet24t',
+        'capaciteCamionBags',
+        'prixGroupageTonne',
+        'paveList'
+      ]) &&
+      data.keys().hasOnly([
+        'updatedAt',
+        'prixCamionComplet24t',
+        'capaciteCamionBags',
+        'prixGroupageTonne',
+        'paveList'
+      ]) &&
+      data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 40 &&
+      data.prixCamionComplet24t is number && data.prixCamionComplet24t >= 0 && data.prixCamionComplet24t <= 100000 &&
+      data.capaciteCamionBags is number && data.capaciteCamionBags >= 1 && data.capaciteCamionBags <= 100 &&
+      data.prixGroupageTonne is number && data.prixGroupageTonne >= 0 && data.prixGroupageTonne <= 100000 &&
+      data.paveList is list && data.paveList.size() >= 1 && data.paveList.size() <= 60;
+    }
+
+    // Connection test path
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // Saved Quotes collection (synchronized across PC, Mobile, and Netlify)
+    match /quotes/{quoteId} {
+      allow get: if isValidId(quoteId);
+      allow list: if resource.data.createdAtMs >= 0;
+      allow create: if isValidId(quoteId) && isValidSavedQuote(incoming(), quoteId);
+      allow update: if isValidId(quoteId) && isValidSavedQuote(incoming(), quoteId);
+      allow delete: if isValidId(quoteId);
+    }
+
+    // Shared Tariff Database configuration (/settings/tarifs)
+    match /settings/{configId} {
+      allow get: if isValidId(configId) && configId == 'tarifs';
+      allow create: if isValidId(configId) && configId == 'tarifs' && isValidTarifConfig(incoming());
+      allow update: if isValidId(configId) && configId == 'tarifs' && isValidTarifConfig(incoming());
+    }
+  }
+}

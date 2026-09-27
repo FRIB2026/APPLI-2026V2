@@ -1,0 +1,6 @@
+{
+  "summary":  "Plan d'implémentation complet combinant le Calculateur Pavé + Transport (design minéral exact, calculs HT, catalogue de pavés pré-configurés, sauvegarde locale des devis, bascule thème clair/sombre et impression PDF soignée) et le Studio de Maquettes de Logo (placement interactif sur toile HTML5 Canvas pour mugs/t-shirts et génération photoréaliste par IA).",
+  "updatedAt":  "2026-09-26T11:27:42.335327241Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

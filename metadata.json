@@ -1,0 +1,6 @@
+{
+  "name": "Calculateur Pavé & Studio Maquettes",
+  "description": "Calculateur professionnel de prix de revient, marge et transport HT pour pavés avec catalogue minéral, historique de devis et studio de maquettes de logo par toile interactive et IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

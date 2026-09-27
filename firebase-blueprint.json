@@ -1,0 +1,178 @@
+{
+  "entities": {
+    "SavedQuote": {
+      "title": "SavedQuote",
+      "description": "Un devis de pavés et transport enregistré par l'équipe Elaxam.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifiant unique du devis",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Nom du chantier ou du client",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "clientRef": {
+          "type": "string",
+          "description": "Référence ou lieu de livraison",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date de création au format JJ/MM/AAAA",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "createdAtMs": {
+          "type": "number",
+          "description": "Horodatage numérique pour le tri chronologique"
+        },
+        "paveId1": {
+          "type": "string",
+          "description": "ID du pavé principal sélectionné",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "paveName1": {
+          "type": "string",
+          "description": "Désignation du pavé principal",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "qte1": {
+          "type": "number",
+          "description": "Quantité commandée 1 en m²"
+        },
+        "prixTonne1": {
+          "type": "number",
+          "description": "Prix HT par tonne du pavé 1"
+        },
+        "paveId2": {
+          "type": "string",
+          "description": "ID du pavé décor sélectionné",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "paveName2": {
+          "type": "string",
+          "description": "Désignation du pavé décor",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "qte2": {
+          "type": "number",
+          "description": "Quantité commandée 2 (décor) en m²"
+        },
+        "prixTonne2": {
+          "type": "number",
+          "description": "Prix HT par tonne du pavé 2"
+        },
+        "m2Tonne": {
+          "type": "number",
+          "description": "Surface couverte par Big Bag de 1000 kg (m²/t)"
+        },
+        "coef": {
+          "type": "number",
+          "description": "Coefficient multiplicateur de marge"
+        },
+        "prixCamionComplet24t": {
+          "type": "number",
+          "description": "Tarif HT d'un camion complet de 24t (24 Big Bags)"
+        },
+        "prixGroupageTonne": {
+          "type": "number",
+          "description": "Tarif HT par tonne en groupage"
+        },
+        "transportMode": {
+          "type": "string",
+          "description": "Mode de calcul transport (auto, camion, groupage, strict24, manuel)"
+        },
+        "nbCamionsManuel": {
+          "type": "number",
+          "description": "Nombre de camions complets retenu"
+        },
+        "nbGroupageBagsManuel": {
+          "type": "number",
+          "description": "Nombre de Big Bags retenu en groupage"
+        },
+        "extraTransportLines": {
+          "type": "array",
+          "description": "Lignes de transport complémentaires éventuelles"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "clientRef",
+        "createdAt",
+        "createdAtMs",
+        "paveId1",
+        "paveName1",
+        "qte1",
+        "prixTonne1",
+        "paveId2",
+        "paveName2",
+        "qte2",
+        "prixTonne2",
+        "m2Tonne",
+        "coef",
+        "prixCamionComplet24t",
+        "prixGroupageTonne",
+        "extraTransportLines"
+      ]
+    },
+    "TarifConfig": {
+      "title": "TarifConfig",
+      "description": "Base de données des tarifs pavés (€/t) et transport (camion 24t + groupage).",
+      "type": "object",
+      "properties": {
+        "updatedAt": {
+          "type": "string",
+          "description": "Date de dernière mise à jour des tarifs",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "prixCamionComplet24t": {
+          "type": "number",
+          "description": "Prix HT camion complet 24t"
+        },
+        "capaciteCamionBags": {
+          "type": "number",
+          "description": "Capacité d'un camion complet en Big Bags (24)"
+        },
+        "prixGroupageTonne": {
+          "type": "number",
+          "description": "Prix HT à la tonne en groupage"
+        },
+        "paveList": {
+          "type": "array",
+          "description": "Liste des pavés et de leurs tarifs à la tonne"
+        }
+      },
+      "required": [
+        "updatedAt",
+        "prixCamionComplet24t",
+        "capaciteCamionBags",
+        "prixGroupageTonne",
+        "paveList"
+      ]
+    }
+  },
+  "firestore": {
+    "/quotes/{quoteId}": {
+      "schema": "SavedQuote",
+      "description": "Collection des devis enregistrés partagés entre appareils (PC, mobile, Netlify)."
+    },
+    "/settings/{configId}": {
+      "schema": "TarifConfig",
+      "description": "Configuration partagée de la base de données des tarifs (document 'tarifs')."
+    }
+  }
+}
